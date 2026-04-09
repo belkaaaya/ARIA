@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather App Test</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <main>
+
+        <h1>Weather App</h1>
+
+        <form>
+            <input type="text" placeholder="Enter a city">
+            <button type="submit">Search</button>
+        </form>
+
+        <div>Loading...</div>
+
+        <section>
+             
+    <h3>Search history</h3>
+    <ul id="historylist"></ul>
+  </section>
+</main>
+
+<script src="script.js"></script>
+</body>
+<main>
+
+ graphical alert 
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.alert.error {
+  background-color: #ffd6d6;
+  color: #8a0000;
+}
+
+.alert.info {
+  background-color: #d6eaff;
+  color: #003366;
+}
+
+.alert.success {
+  background-color: #d6ffd6;
+  color: #0a5a0a;
+}
+
+
+
+
+function fetchWeather(city) {
+  loader.classList.remove("hidden");
+  result.innerHTML = "";
+
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", `https://wttr.in/${city}?format=j1`, true);
+
+  xhr.onload = function () {
+    loader.classList.add("hidden");
+
+    if (xhr.status !== 200) {
+      showAlert("Error", "error");
+      return;
+    }
+
+    try {
+      const data = JSON.parse(xhr.responseText);
+      displayWeather(data, city);
+      addToHistory(city);
+    } catch {
+      showAlert("invalid weather data ", "error");
+    }
+  };
+
+  xhr.onerror = function () {
+    loader.classList.add("hidden");
+    showAlert("Network error.", "error");
+  };
+
+  xhr.send();
+}
+
+ Display Weather 
+function displayWeather(data, city) {
+  const current = data.current_condition[0];
+
+  const temp = current.temp_C;
+  const humidity = current.humidity;
+  const description = current.weatherDesc[0].value;
+  const iconClass = getWeatherIcon(description);
+
+  result.innerHTML = `
+    <article>
+      <h2>${city}</h2>
+      <i class="fas ${iconClass} weather-icon"></i>
+      <p><strong>Temperature:</strong> ${temp} °C</p>
+      <p><strong>Humidity:</strong> ${humidity}%</p>
+      <p><strong>Condition:</strong> ${description}</p>
+    </article>
+  `;
+
+ weather alerts 
+  if (temp < 0) {
+    showAlert(" Freezing temperatur", "error");
+  } else if (description.toLowerCase().includes("sun")) {
+    showAlert("great day.", "success");
+  } else if (description.toLowerCase().includes("rain")) {
+    showAlert(" rainy day.", "info");
+  }
+}
+
+
+weather icons
+function getWeatherIcon(description) {
+  description = description.toLowerCase();
+
+  if (description.includes("sun")) return "fa-sun";
+  if (description.includes("cloud")) return "fa-cloud";
+  if (description.includes("rain")) return "fa-cloud-rain";
+  if (description.includes("storm")) return "fa-bolt";
+  if (description.includes("snow")) return "fa-snowflake";
+
+  return "fa-cloud-sun";
+}
+
+
+
+unction addToHistory(city) {
+  if (history.includes(city)) return;
+
+  history.push(city);
+
+  const li = document.createElement("li");
+  const link = document.createElement("a");
+  link.href = "#";
+  link.texContent = city;
+
+  link.addEventListener("click", () => fetchWeather(city));
+
+  li.appendChild(link);
+  historyList.appendChild(li);
+}
+
+form Validation
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const city = cityInput.value.trim();
+
+  if (city === "") {
+    showAlert("enter your city name", "error");
+    cityInput.classList.add("shake");
+
+    setTimeout()
+    return;
+  }
+
+  fetchWeather(city);
+});
